@@ -4,7 +4,7 @@ use std::os::raw::c_int;
 use std::{fmt, mem};
 
 use crate::error::{Error, Result};
-use crate::state::{Lua, RawLua};
+use crate::state::{Luau, RawLua};
 use crate::traits::FromLua;
 use crate::userdata::AnyUserData;
 use crate::util::get_userdata;
@@ -65,14 +65,15 @@ impl<T> TryFrom<UserDataVariant<T>> for UserDataRef<T> {
         // Shared (read) lock is always correct:
         // - with `send` feature, `T: Sync` is guaranteed by the `MaybeSync` bound on userdata creation
         // - without `send` feature, single-threaded access makes shared lock safe for any `T`
-        let guard = variant.raw_lock().try_lock_shared_guarded();        let guard = guard.map_err(|_| Error::UserDataBorrowError)?;
+        let guard = variant.raw_lock().try_lock_shared_guarded();
+        let guard = guard.map_err(|_| Error::UserDataBorrowError)?;
         let guard = unsafe { mem::transmute::<LockGuard<_>, LockGuard<'static, _>>(guard) };
         Ok(UserDataRef::from_parts(UserDataRefInner::Default(variant), guard))
     }
 }
 
 impl<T: 'static> FromLua for UserDataRef<T> {
-    fn from_lua(value: Value, _: &Lua) -> Result<Self> {
+    fn from_lua(value: Value, _: &Luau) -> Result<Self> {
         try_value_to_userdata::<T>(value)?.borrow()
     }
 
@@ -289,7 +290,7 @@ impl<T> TryFrom<UserDataVariant<T>> for UserDataRefMut<T> {
 }
 
 impl<T: 'static> FromLua for UserDataRefMut<T> {
-    fn from_lua(value: Value, _: &Lua) -> Result<Self> {
+    fn from_lua(value: Value, _: &Luau) -> Result<Self> {
         try_value_to_userdata::<T>(value)?.borrow_mut()
     }
 

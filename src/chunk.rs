@@ -8,7 +8,7 @@ use std::string::String as StdString;
 
 use crate::error::{Error, Result};
 use crate::function::Function;
-use crate::state::{Lua, WeakLua};
+use crate::state::{Luau, WeakLua};
 use crate::table::Table;
 use crate::traits::{FromLuaMulti, IntoLua, IntoLuaMulti};
 use crate::value::Value;
@@ -27,7 +27,7 @@ pub trait AsChunk {
     /// Returns optional chunk [environment]
     ///
     /// [environment]: https://www.lua.org/manual/5.4/manual.html#2.2
-    fn environment(&self, lua: &Lua) -> Result<Option<Table>> {
+    fn environment(&self, lua: &Luau) -> Result<Option<Table>> {
         let _lua = lua; // suppress warning
         Ok(None)
     }
@@ -116,7 +116,7 @@ impl<C: AsChunk + ?Sized> AsChunk for Box<C> {
         (**self).name()
     }
 
-    fn environment(&self, lua: &Lua) -> Result<Option<Table>> {
+    fn environment(&self, lua: &Luau) -> Result<Option<Table>> {
         (**self).environment(lua)
     }
 
@@ -749,7 +749,7 @@ impl Chunk<'_> {
 }
 
 impl<T: AsChunk> IntoLua for WrappedChunk<T> {
-    fn into_lua(self, lua: &Lua) -> Result<Value> {
+    fn into_lua(self, lua: &Luau) -> Result<Value> {
         lua.load_with_location(self.chunk, self.caller)
             .into_function()
             .map(Value::Function)

@@ -200,6 +200,6 @@ impl Serialize for Buffer {
 }
 
 #[cfg(feature = "luau")]
-impl crate::types::LuaType for Buffer {
+impl crate::types::LuauType for Buffer {
     const TYPE_ID: std::os::raw::c_int = ffi::LUA_TBUFFER;
 }

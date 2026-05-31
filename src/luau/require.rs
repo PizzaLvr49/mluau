@@ -8,7 +8,7 @@ use std::{fmt, mem, ptr};
 
 use crate::error::{Error, Result};
 use crate::function::Function;
-use crate::state::{callback_error_ext, Lua};
+use crate::state::{callback_error_ext, Luau};
 use crate::table::Table;
 use crate::types::MaybeSend;
 
@@ -94,7 +94,7 @@ pub trait Require {
     ///
     /// Loader can be sync or async.
     /// This function is only called if `has_module` returns true.
-    fn loader(&self, lua: &Lua) -> Result<Function>;
+    fn loader(&self, lua: &Luau) -> Result<Function>;
 }
 
 impl fmt::Debug for dyn Require {
@@ -349,7 +349,7 @@ unsafe fn write_to_buffer(
 
 #[cfg(feature = "luau")]
 pub(super) fn create_require_function<R: Require + MaybeSend + 'static>(
-    lua: &Lua,
+    lua: &Luau,
     require: R,
 ) -> Result<Function> {
     unsafe extern "C-unwind" fn find_current_file(state: *mut ffi::lua_State) -> c_int {

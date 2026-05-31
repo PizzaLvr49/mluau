@@ -5,10 +5,10 @@ use std::{mem, ptr, slice};
 use crate::error::{Error, Result};
 #[cfg(feature = "luau")]
 use crate::state::util::get_next_spot;
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::table::Table;
-use crate::traits::{FromLuaMulti, IntoLua, IntoLuaMulti, LuaNativeFn, LuaNativeFnMut};
-use crate::types::{Callback, LuaType, MaybeSend, ValueRef};
+use crate::traits::{FromLuaMulti, IntoLua, IntoLuaMulti, LuauNativeFn, LuauNativeFnMut};
+use crate::types::{Callback, LuauType, MaybeSend, ValueRef};
 use crate::util::{
     assert_stack, check_stack, linenumber_to_usize, pop_error, ptr_to_lossy_str, ptr_to_str, StackGuard,
 };
@@ -503,7 +503,7 @@ impl Function {
     #[inline]
     pub fn wrap<F, A, R>(func: F) -> impl IntoLua
     where
-        F: LuaNativeFn<A, Output = Result<R>> + MaybeSend + 'static,
+        F: LuauNativeFn<A, Output = Result<R>> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -517,7 +517,7 @@ impl Function {
     /// Wraps a Rust mutable closure, returning an opaque type that implements [`IntoLua`] trait.
     pub fn wrap_mut<F, A, R>(func: F) -> impl IntoLua
     where
-        F: LuaNativeFnMut<A, Output = Result<R>> + MaybeSend + 'static,
+        F: LuauNativeFnMut<A, Output = Result<R>> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -538,7 +538,7 @@ impl Function {
     #[inline]
     pub fn wrap_raw<F, A>(func: F) -> impl IntoLua
     where
-        F: LuaNativeFn<A> + MaybeSend + 'static,
+        F: LuauNativeFn<A> + MaybeSend + 'static,
         A: FromLuaMulti,
     {
         WrappedFunction(Box::new(move |lua, nargs| unsafe {
@@ -555,7 +555,7 @@ impl Function {
     #[inline]
     pub fn wrap_raw_mut<F, A>(func: F) -> impl IntoLua
     where
-        F: LuaNativeFnMut<A> + MaybeSend + 'static,
+        F: LuauNativeFnMut<A> + MaybeSend + 'static,
         A: FromLuaMulti,
     {
         let func = RefCell::new(func);
@@ -570,12 +570,12 @@ impl Function {
 
 impl IntoLua for WrappedFunction {
     #[inline]
-    fn into_lua(self, lua: &Lua) -> Result<Value> {
+    fn into_lua(self, lua: &Luau) -> Result<Value> {
         lua.lock().create_callback(self.0).map(Value::Function)
     }
 }
 
-impl LuaType for Function {
+impl LuauType for Function {
     const TYPE_ID: c_int = ffi::LUA_TFUNCTION;
 }
 

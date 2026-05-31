@@ -6,7 +6,7 @@ use std::{env, fs};
 
 use crate::error::Result;
 use crate::function::Function;
-use crate::state::Lua;
+use crate::state::Luau;
 
 use super::{NavigateError, Require};
 
@@ -219,7 +219,7 @@ impl Require for TextRequirer {
         fs::read(self.abs_path.join(Self::LUAU_CONFIG_FILENAME))
     }
 
-    fn loader(&self, lua: &Lua) -> Result<Function> {
+    fn loader(&self, lua: &Luau) -> Result<Function> {
         let name = format!("@{}", self.rel_path.display());
         lua.load(self.resolved_path.as_deref().unwrap())
             .set_name(name)

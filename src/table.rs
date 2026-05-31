@@ -6,7 +6,7 @@ use std::string::String as StdString;
 
 use crate::error::{Error, Result};
 use crate::function::Function;
-use crate::state::{LuaGuard, RawLua, WeakLua};
+use crate::state::{LuauGuard, RawLua, WeakLua};
 use crate::traits::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, ObjectLike};
 use crate::types::{Integer, ValueRef};
 use crate::util::{assert_stack, check_stack, get_metatable_ptr, StackGuard};
@@ -1134,7 +1134,7 @@ impl Serialize for SerializableTable<'_> {
 ///
 /// [`Table::pairs`]: crate::Table::pairs
 pub struct TablePairs<'a, K, V> {
-    guard: LuaGuard,
+    guard: LuauGuard,
     table: &'a Table,
     key: Option<Value>,
     _phantom: PhantomData<(K, V)>,
@@ -1194,7 +1194,7 @@ where
 ///
 /// [`Table::pairs`]: crate::Table::pairs
 pub struct TablePairsOwned<K, V> {
-    guard: LuaGuard,
+    guard: LuauGuard,
     table: Table,
     key: Option<Value>,
     _phantom: PhantomData<(K, V)>,
@@ -1254,7 +1254,7 @@ where
 ///
 /// [`Table::sequence_values`]: crate::Table::sequence_values
 pub struct TableSequence<'a, V> {
-    guard: LuaGuard,
+    guard: LuauGuard,
     table: &'a Table,
     index: Integer,
     len: Option<usize>,

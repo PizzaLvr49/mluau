@@ -24,7 +24,7 @@ use crate::thread::Thread;
 use crate::traits::IntoLua;
 use crate::types::{
     AppDataRef, AppDataRefMut, Callback, CallbackUpvalue, DestructedUserdata, Integer, LightUserData,
-    LuaType, MaybeSend, ReentrantMutex, RegistryKey, ValueRef, XRc,
+    LuauType, MaybeSend, ReentrantMutex, RegistryKey, ValueRef, XRc,
 };
 
 #[cfg(feature = "luau")]
@@ -48,7 +48,7 @@ use crate::util::{
 use crate::value::{Nil, Value};
 
 use super::extra::ExtraData;
-use super::{Lua, LuaOptions, WeakLua};
+use super::{Luau, LuauOptions, WeakLua};
 
 #[cfg(not(feature = "luau"))]
 use crate::{
@@ -105,7 +105,7 @@ unsafe impl Send for RawLua {}
 
 impl RawLua {
     #[inline(always)]
-    pub(crate) fn lua(&self) -> &Lua {
+    pub(crate) fn lua(&self) -> &Luau {
         unsafe { (*self.extra.get()).lua() }
     }
 
@@ -149,13 +149,13 @@ impl RawLua {
         self.extra.get()
     }
 
-    pub(super) unsafe fn new(libs: StdLib, options: &LuaOptions) -> XRc<ReentrantMutex<Self>> {
+    pub(super) unsafe fn new(libs: StdLib, options: &LuauOptions) -> XRc<ReentrantMutex<Self>> {
         Self::new_ext(libs, options, true)
     }
 
     pub(super) unsafe fn new_ext(
         libs: StdLib,
-        options: &LuaOptions,
+        options: &LuauOptions,
         owned: bool,
     ) -> XRc<ReentrantMutex<Self>> {
         let mem_state: *mut MemoryState = Box::into_raw(Box::default());
@@ -673,7 +673,7 @@ impl RawLua {
     }
 
     /// Pushes a primitive type value onto the Lua stack.
-    pub(crate) unsafe fn push_primitive_type<T: LuaType>(&self, state: *mut ffi::lua_State) -> bool {
+    pub(crate) unsafe fn push_primitive_type<T: LuauType>(&self, state: *mut ffi::lua_State) -> bool {
         match T::TYPE_ID {
             ffi::LUA_TBOOLEAN => {
                 ffi::lua_pushboolean(state, 0);
@@ -1296,7 +1296,8 @@ impl RawLua {
                 self.push_at(state, self.create_callback(m)?)?; // without namecall support
                 #[cfg(feature = "luau")]
                 {
-                    self.push_at(state, self.create_callback_namecall(m, std::ptr::null())?)?; // with namecall support
+                    self.push_at(state, self.create_callback_namecall(m, std::ptr::null())?)?;
+                    // with namecall support
                 }
                 rawset_field(state, -2, &k)?;
             }
@@ -1361,7 +1362,8 @@ impl RawLua {
                 // In Luau `luaL_typename` return heap-allocated string that is valid only for
                 // the `state` lifetime.
                 // `lua_typename` is used instead to get a truly static string.
-                let idx_type_name = CStr::from_ptr(ffi::lua_typename(state, ffi::lua_type(state, idx)));                let idx_type_name = idx_type_name.to_str().unwrap();
+                let idx_type_name = CStr::from_ptr(ffi::lua_typename(state, ffi::lua_type(state, idx)));
+                let idx_type_name = idx_type_name.to_str().unwrap();
                 let message = format!("expected userdata of type '{}'", short_type_name::<T>());
                 Err(Error::from_lua_conversion(idx_type_name, "userdata", message))
             }

@@ -26,7 +26,8 @@ use crate::thread::ContinuationStatus;
 
 use crate::traits::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti};
 use crate::types::{
-    AppDataRef, AppDataRefMut, ArcReentrantMutexGuard, Integer, LuaType, MaybeSend, MaybeSync, Number, ReentrantMutex, ReentrantMutexGuard, RegistryKey, VmState, XRc, XWeak
+    AppDataRef, AppDataRefMut, ArcReentrantMutexGuard, Integer, LuauType, MaybeSend, MaybeSync, Number,
+    ReentrantMutex, ReentrantMutexGuard, RegistryKey, VmState, XRc, XWeak,
 };
 use crate::userdata::{AnyUserData, UserData, UserDataProxy, UserDataRegistry, UserDataStorage};
 use crate::util::{assert_stack, check_stack, protect_lua_closure, push_string, rawset_field, StackGuard};
@@ -50,7 +51,7 @@ pub use raw::RawLua;
 pub(crate) use util::callback_error_ext;
 
 /// Top level Lua struct which represents an instance of Lua VM.
-pub struct Lua {
+pub struct Luau {
     pub(self) raw: XRc<ReentrantMutex<RawLua>>,
     // Controls whether garbage collection should be run on drop
     pub(self) collect_garbage: bool,
@@ -62,7 +63,7 @@ pub struct Lua {
 #[derive(Clone)]
 pub struct WeakLua(XWeak<ReentrantMutex<RawLua>>);
 
-pub(crate) struct LuaGuard(ArcReentrantMutexGuard<RawLua>);
+pub(crate) struct LuauGuard(ArcReentrantMutexGuard<RawLua>);
 
 /// Mode of the Lua garbage collector (GC).
 ///
@@ -83,7 +84,7 @@ pub enum GCMode {
 /// Controls Lua interpreter behavior such as Rust panics handling.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
-pub struct LuaOptions {
+pub struct LuauOptions {
     /// Catch Rust panics when using [`pcall`]/[`xpcall`].
     ///
     /// If disabled, wraps these functions and automatically resumes panic if found.
@@ -107,16 +108,16 @@ pub struct LuaOptions {
     pub disable_error_userdata: bool,
 }
 
-impl Default for LuaOptions {
+impl Default for LuauOptions {
     fn default() -> Self {
-        const { LuaOptions::new() }
+        const { LuauOptions::new() }
     }
 }
 
-impl LuaOptions {
+impl LuauOptions {
     /// Returns a new instance of `LuaOptions` with default parameters.
     pub const fn new() -> Self {
-        LuaOptions {
+        LuauOptions {
             catch_rust_panics: true,
             disable_error_userdata: false,
         }
@@ -141,7 +142,7 @@ impl LuaOptions {
     }
 }
 
-impl Drop for Lua {
+impl Drop for Luau {
     fn drop(&mut self) {
         if self.collect_garbage {
             let _ = self.gc_collect();
@@ -149,30 +150,30 @@ impl Drop for Lua {
     }
 }
 
-impl Clone for Lua {
+impl Clone for Luau {
     #[inline]
     fn clone(&self) -> Self {
-        Lua {
+        Luau {
             raw: XRc::clone(&self.raw),
             collect_garbage: false,
         }
     }
 }
 
-impl fmt::Debug for Lua {
+impl fmt::Debug for Luau {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Lua({:p})", self.lock().state())
     }
 }
 
-impl Default for Lua {
+impl Default for Luau {
     #[inline]
     fn default() -> Self {
-        Lua::new()
+        Luau::new()
     }
 }
 
-impl Lua {
+impl Luau {
     /// Creates a new Lua state and loads the **safe** subset of the standard libraries.
     ///
     /// # Safety
@@ -180,9 +181,9 @@ impl Lua {
     /// standard libraries or C modules.
     ///
     /// See [`StdLib`] documentation for a list of unsafe modules that cannot be loaded.
-    pub fn new() -> Lua {
+    pub fn new() -> Luau {
         mlua_expect!(
-            Self::new_with(StdLib::ALL_SAFE, LuaOptions::default()),
+            Self::new_with(StdLib::ALL_SAFE, LuauOptions::default()),
             "Cannot create a Lua state"
         )
     }
@@ -191,8 +192,8 @@ impl Lua {
     ///
     /// # Safety
     /// The created Lua state will not have safety guarantees and will allow to load C modules.
-    pub unsafe fn unsafe_new() -> Lua {
-        Self::unsafe_new_with(StdLib::ALL, LuaOptions::default())
+    pub unsafe fn unsafe_new() -> Luau {
+        Self::unsafe_new_with(StdLib::ALL, LuauOptions::default())
     }
 
     /// Creates a new Lua state and loads the specified safe subset of the standard libraries.
@@ -204,7 +205,7 @@ impl Lua {
     /// standard libraries or C modules.
     ///
     /// See [`StdLib`] documentation for a list of unsafe modules that cannot be loaded.
-    pub fn new_with(libs: StdLib, options: LuaOptions) -> Result<Lua> {
+    pub fn new_with(libs: StdLib, options: LuauOptions) -> Result<Luau> {
         #[cfg(not(feature = "luau"))]
         if libs.contains(StdLib::DEBUG) {
             return Err(Error::SafetyError(
@@ -235,7 +236,7 @@ impl Lua {
     ///
     /// # Safety
     /// The created Lua state will not have safety guarantees and allow to load C modules.
-    pub unsafe fn unsafe_new_with(libs: StdLib, options: LuaOptions) -> Lua {
+    pub unsafe fn unsafe_new_with(libs: StdLib, options: LuauOptions) -> Luau {
         // Workaround to avoid stripping a few unused Lua symbols that could be imported
         // by C modules in unsafe mode
         let mut _symbols: Vec<*const extern "C-unwind" fn()> =
@@ -258,8 +259,8 @@ impl Lua {
     }
 
     /// Creates a new Lua state with required `libs` and `options`
-    unsafe fn inner_new(libs: StdLib, options: LuaOptions) -> Lua {
-        let lua = Lua {
+    unsafe fn inner_new(libs: StdLib, options: LuauOptions) -> Luau {
+        let lua = Luau {
             raw: RawLua::new(libs, &options),
             collect_garbage: true,
         };
@@ -278,7 +279,7 @@ impl Lua {
     /// # Safety
     /// The `Lua` must outlive the chosen lifetime `'a`.
     #[inline]
-    pub unsafe fn get_or_init_from_ptr<'a>(state: *mut ffi::lua_State) -> &'a Lua {
+    pub unsafe fn get_or_init_from_ptr<'a>(state: *mut ffi::lua_State) -> &'a Luau {
         debug_assert!(!state.is_null(), "Lua state is null");
         match ExtraData::get(state) {
             extra if !extra.is_null() => (*extra).lua(),
@@ -445,7 +446,7 @@ impl Lua {
     #[cfg(not(tarpaulin_include))]
     pub unsafe fn entrypoint<F, A, R>(state: *mut ffi::lua_State, func: F) -> c_int
     where
-        F: FnOnce(&Lua, A) -> Result<R>,
+        F: FnOnce(&Luau, A) -> Result<R>,
         A: FromLuaMulti,
         R: IntoLua,
     {
@@ -465,7 +466,7 @@ impl Lua {
     #[cfg(not(tarpaulin_include))]
     pub unsafe fn entrypoint1<F, R>(state: *mut ffi::lua_State, func: F) -> c_int
     where
-        F: FnOnce(&Lua) -> Result<R>,
+        F: FnOnce(&Luau) -> Result<R>,
         R: IntoLua,
     {
         Self::entrypoint(state, move |lua, _: ()| func(lua))
@@ -545,7 +546,7 @@ impl Lua {
     #[cfg_attr(docsrs, doc(cfg(not(feature = "luau"))))]
     pub fn set_global_hook<F>(&self, triggers: HookTriggers, callback: F) -> Result<()>
     where
-        F: Fn(&Lua, &Debug) -> Result<VmState> + MaybeSend + 'static,
+        F: Fn(&Luau, &Debug) -> Result<VmState> + MaybeSend + 'static,
     {
         let lua = self.lock();
         unsafe {
@@ -676,7 +677,7 @@ impl Lua {
     #[cfg_attr(docsrs, doc(cfg(feature = "luau")))]
     pub fn set_interrupt<F>(&self, callback: F)
     where
-        F: Fn(&Lua) -> Result<VmState> + MaybeSend + 'static,
+        F: Fn(&Luau) -> Result<VmState> + MaybeSend + 'static,
     {
         unsafe extern "C-unwind" fn interrupt_proc(state: *mut ffi::lua_State, gc: c_int) {
             if gc >= 0 {
@@ -749,7 +750,7 @@ impl Lua {
     #[cfg_attr(docsrs, doc(cfg(feature = "luau")))]
     pub fn set_gc_interrupt<F>(&self, callback: F)
     where
-        F: Fn(&Lua, c_int) + MaybeSend + 'static,
+        F: Fn(&Luau, c_int) + MaybeSend + 'static,
     {
         let lua = self.lock_gc_safe();
         unsafe {
@@ -772,7 +773,7 @@ impl Lua {
     #[cfg_attr(docsrs, doc(cfg(feature = "luau")))]
     pub fn set_thread_creation_callback<F>(&self, callback: F)
     where
-        F: Fn(&Lua, Thread) -> Result<()> + MaybeSend + 'static,
+        F: Fn(&Luau, Thread) -> Result<()> + MaybeSend + 'static,
     {
         let lua = self.lock_gc_safe();
         unsafe {
@@ -887,7 +888,7 @@ impl Lua {
     #[cfg_attr(docsrs, doc(cfg(feature = "lua54")))]
     pub fn set_warning_function<F>(&self, callback: F)
     where
-        F: Fn(&Lua, &str, bool) -> Result<()> + MaybeSend + 'static,
+        F: Fn(&Luau, &str, bool) -> Result<()> + MaybeSend + 'static,
     {
         use std::ffi::CStr;
         use std::os::raw::{c_char, c_void};
@@ -1367,7 +1368,7 @@ impl Lua {
     /// ```
     pub fn create_function<F, A, R>(&self, func: F) -> Result<Function>
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -1397,8 +1398,8 @@ impl Lua {
         debugname: Option<&'static CStr>,
     ) -> Result<Function>
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
-        FC: Fn(&Lua, ContinuationStatus, AC) -> Result<RC> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
+        FC: Fn(&Luau, ContinuationStatus, AC) -> Result<RC> + MaybeSend + 'static,
         A: FromLuaMulti,
         AC: FromLuaMulti,
         R: IntoLuaMulti,
@@ -1428,7 +1429,7 @@ impl Lua {
     /// This is a version of [`Lua::create_function`] that accepts a `FnMut` argument.
     pub fn create_function_mut<F, A, R>(&self, func: F) -> Result<Function>
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -1446,7 +1447,7 @@ impl Lua {
         debugname: Option<&'static CStr>,
     ) -> Result<Function>
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -1468,7 +1469,7 @@ impl Lua {
         debugname: Option<&'static CStr>,
     ) -> Result<Function>
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -1658,7 +1659,7 @@ impl Lua {
     ///
     /// See [`Lua::set_type_metatable`] for examples.
     #[allow(private_bounds)]
-    pub fn type_metatable<T: LuaType>(&self) -> Option<Table> {
+    pub fn type_metatable<T: LuauType>(&self) -> Option<Table> {
         let lua = self.lock();
         let state = lua.state();
         unsafe {
@@ -1692,7 +1693,7 @@ impl Lua {
     /// # }
     /// ```
     #[allow(private_bounds)]
-    pub fn set_type_metatable<T: LuaType>(&self, metatable: Option<Table>) {
+    pub fn set_type_metatable<T: LuauType>(&self, metatable: Option<Table>) {
         let lua = self.lock();
         let state = lua.state();
         unsafe {
@@ -2247,8 +2248,8 @@ impl Lua {
     }
 
     #[inline(always)]
-    pub(crate) fn lock_arc(&self) -> LuaGuard {
-        LuaGuard(self.raw.lock_arc())
+    pub(crate) fn lock_arc(&self) -> LuauGuard {
+        LuauGuard(self.raw.lock_arc())
     }
 
     /// Set the yield arguments. Note that Lua will not yield until you return from the function
@@ -2368,7 +2369,7 @@ impl Lua {
     #[cfg(feature = "luau")]
     pub fn try_call<F, R>(&self, func: F) -> Result<R>
     where
-        F: FnOnce(&Lua) -> R + MaybeSend + 'static,
+        F: FnOnce(&Luau) -> R + MaybeSend + 'static,
         R: 'static,
     {
         #[repr(C)]
@@ -2378,7 +2379,7 @@ impl Lua {
         }
         unsafe extern "C-unwind" fn call<F, R>(state: *mut ffi::lua_State, data: *mut c_void) -> *mut c_void
         where
-            F: FnOnce(&Lua) -> R + MaybeSend + 'static,
+            F: FnOnce(&Luau) -> R + MaybeSend + 'static,
             R: 'static,
         {
             let data = &mut *(data as *mut CallData<F, R>);
@@ -2434,8 +2435,8 @@ impl Lua {
 impl WeakLua {
     #[track_caller]
     #[inline(always)]
-    pub(crate) fn lock(&self) -> LuaGuard {
-        let guard = LuaGuard::new(self.0.upgrade().expect("Lua instance is destroyed"));
+    pub(crate) fn lock(&self) -> LuauGuard {
+        let guard = LuauGuard::new(self.0.upgrade().expect("Luau instance is destroyed"));
         #[cfg(feature = "luau")]
         if unsafe { (*guard.extra.get()).running_gc } {
             panic!("Luau VM is suspended while GC is running");
@@ -2444,8 +2445,8 @@ impl WeakLua {
     }
 
     #[inline(always)]
-    pub(crate) fn try_lock(&self) -> Option<LuaGuard> {
-        Some(LuaGuard::new(self.0.upgrade()?))
+    pub(crate) fn try_lock(&self) -> Option<LuauGuard> {
+        Some(LuauGuard::new(self.0.upgrade()?))
     }
 
     /// Upgrades the weak Lua reference to a strong reference.
@@ -2455,9 +2456,9 @@ impl WeakLua {
     /// Panics if the Lua instance is destroyed.
     #[track_caller]
     #[inline(always)]
-    pub fn upgrade(&self) -> Lua {
-        Lua {
-            raw: self.0.upgrade().expect("Lua instance is destroyed"),
+    pub fn upgrade(&self) -> Luau {
+        Luau {
+            raw: self.0.upgrade().expect("Luau instance is destroyed"),
             collect_garbage: false,
         }
     }
@@ -2466,8 +2467,8 @@ impl WeakLua {
     ///
     /// Returns `None` if the Lua instance is destroyed.
     #[inline(always)]
-    pub fn try_upgrade(&self) -> Option<Lua> {
-        Some(Lua {
+    pub fn try_upgrade(&self) -> Option<Luau> {
+        Some(Luau {
             raw: self.0.upgrade()?,
             collect_garbage: false,
         })
@@ -2506,19 +2507,19 @@ impl PartialEq for WeakLua {
 
 impl Eq for WeakLua {}
 
-impl LuaGuard {
+impl LuauGuard {
     #[cfg(feature = "send")]
     pub(crate) fn new(handle: XRc<ReentrantMutex<RawLua>>) -> Self {
-        LuaGuard(handle.lock_arc())
+        LuauGuard(handle.lock_arc())
     }
 
     #[cfg(not(feature = "send"))]
     pub(crate) fn new(handle: XRc<ReentrantMutex<RawLua>>) -> Self {
-        LuaGuard(handle.into_lock_arc())
+        LuauGuard(handle.into_lock_arc())
     }
 }
 
-impl Deref for LuaGuard {
+impl Deref for LuauGuard {
     type Target = RawLua;
 
     fn deref(&self) -> &Self::Target {
@@ -2535,10 +2536,10 @@ mod assertions {
     use super::*;
 
     // Lua has lots of interior mutability, should not be RefUnwindSafe
-    static_assertions::assert_not_impl_any!(Lua: std::panic::RefUnwindSafe);
+    static_assertions::assert_not_impl_any!(Luau: std::panic::RefUnwindSafe);
 
     #[cfg(not(feature = "send"))]
-    static_assertions::assert_not_impl_any!(Lua: Send);
+    static_assertions::assert_not_impl_any!(Luau: Send);
     #[cfg(feature = "send")]
-    static_assertions::assert_impl_all!(Lua: Send, Sync);
+    static_assertions::assert_impl_all!(Luau: Send, Sync);
 }

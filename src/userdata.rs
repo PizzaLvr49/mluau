@@ -7,7 +7,7 @@ use std::string::String as StdString;
 
 use crate::error::{Error, Result};
 use crate::function::Function;
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::string::String;
 use crate::table::{Table, TablePairs};
 use crate::traits::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti};
@@ -261,7 +261,7 @@ pub trait UserDataMethods<T> {
     /// be used as a fall-back if no regular method is found.
     fn add_method<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -279,7 +279,7 @@ pub trait UserDataMethods<T> {
         debugname: &'static CStr,
         method: M,
     ) where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -290,7 +290,7 @@ pub trait UserDataMethods<T> {
     /// [`add_method`]: UserDataMethods::add_method
     fn add_method_mut<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -308,7 +308,7 @@ pub trait UserDataMethods<T> {
         debugname: &'static CStr,
         method: M,
     ) where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -323,7 +323,7 @@ pub trait UserDataMethods<T> {
     fn add_method_once<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
         T: 'static,
-        M: Fn(&Lua, T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -342,7 +342,7 @@ pub trait UserDataMethods<T> {
     /// argument: `my_userdata.my_method(my_userdata, arg1, arg2)`.
     fn add_function<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -358,7 +358,7 @@ pub trait UserDataMethods<T> {
         debugname: &'static CStr,
         function: F,
     ) where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -369,7 +369,7 @@ pub trait UserDataMethods<T> {
     /// [`add_function`]: UserDataMethods::add_function
     fn add_function_mut<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -386,7 +386,7 @@ pub trait UserDataMethods<T> {
         debugname: &'static CStr,
         function: F,
     ) where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -400,7 +400,7 @@ pub trait UserDataMethods<T> {
     /// [`add_meta_function`]: UserDataMethods::add_meta_function
     fn add_meta_method<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -414,7 +414,7 @@ pub trait UserDataMethods<T> {
     /// [`add_meta_function`]: UserDataMethods::add_meta_function
     fn add_meta_method_mut<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -425,7 +425,7 @@ pub trait UserDataMethods<T> {
     /// userdata of type `T`.
     fn add_meta_function<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 
@@ -436,7 +436,7 @@ pub trait UserDataMethods<T> {
     /// [`add_meta_function`]: UserDataMethods::add_meta_function
     fn add_meta_function_mut<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti;
 }
@@ -465,7 +465,7 @@ pub trait UserDataFields<T> {
     /// be used as a fall-back if no regular field or method are found.
     fn add_field_method_get<M, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T) -> Result<R> + MaybeSend + 'static,
         R: IntoLua;
 
     /// Add a regular field setter as a method which accepts a `&mut T` as the first parameter.
@@ -478,21 +478,21 @@ pub trait UserDataFields<T> {
     /// will be used as a fall-back if no regular field is found.
     fn add_field_method_set<M, A>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<()> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<()> + MaybeSend + 'static,
         A: FromLua;
 
     /// Add a regular field getter as a function which accepts a generic [`AnyUserData`] of type `T`
     /// argument.
     fn add_field_function_get<F, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, AnyUserData) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, AnyUserData) -> Result<R> + MaybeSend + 'static,
         R: IntoLua;
 
     /// Add a regular field setter as a function which accepts a generic [`AnyUserData`] of type `T`
     /// first argument.
     fn add_field_function_set<F, A>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: FnMut(&Lua, AnyUserData, A) -> Result<()> + MaybeSend + 'static,
+        F: FnMut(&Luau, AnyUserData, A) -> Result<()> + MaybeSend + 'static,
         A: FromLua;
 
     /// Add a metatable field.
@@ -517,7 +517,7 @@ pub trait UserDataFields<T> {
     /// like `__gc` or `__metatable`.
     fn add_meta_field_with<F, R>(&mut self, name: impl Into<StdString>, f: F)
     where
-        F: FnOnce(&Lua) -> Result<R> + 'static,
+        F: FnOnce(&Luau) -> Result<R> + 'static,
         R: IntoLua;
 }
 
@@ -1185,7 +1185,7 @@ impl Serialize for AnyUserData {
     }
 }
 
-struct WrappedUserdata<F: FnOnce(&Lua) -> Result<AnyUserData>>(F);
+struct WrappedUserdata<F: FnOnce(&Luau) -> Result<AnyUserData>>(F);
 
 impl AnyUserData {
     /// Wraps any Rust type, returning an opaque type that implements [`IntoLua`] trait.
@@ -1208,9 +1208,9 @@ impl AnyUserData {
 
 impl<F> IntoLua for WrappedUserdata<F>
 where
-    F: for<'l> FnOnce(&'l Lua) -> Result<AnyUserData>,
+    F: for<'l> FnOnce(&'l Luau) -> Result<AnyUserData>,
 {
-    fn into_lua(self, lua: &Lua) -> Result<Value> {
+    fn into_lua(self, lua: &Luau) -> Result<Value> {
         (self.0)(lua).map(Value::UserData)
     }
 }

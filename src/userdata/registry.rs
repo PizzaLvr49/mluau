@@ -10,7 +10,7 @@ use std::marker::PhantomData;
 use std::string::String as StdString;
 
 use crate::error::{Error, Result};
-use crate::state::{Lua, LuaGuard};
+use crate::state::{Luau, LuauGuard};
 use crate::traits::{FromLua, FromLuaMulti, IntoLua, IntoLuaMulti};
 use crate::types::{Callback, MaybeSend};
 use crate::userdata::{
@@ -32,7 +32,7 @@ enum UserDataType {
 
 /// Handle to registry for userdata methods and metamethods.
 pub struct UserDataRegistry<T> {
-    lua: LuaGuard,
+    lua: LuauGuard,
     raw: RawUserDataRegistry,
     r#type: UserDataType,
     _phantom: PhantomData<T>,
@@ -97,14 +97,14 @@ unsafe impl Send for UserDataType {}
 
 impl<T: 'static> UserDataRegistry<T> {
     #[inline(always)]
-    pub(crate) fn new(lua: &Lua) -> Self {
+    pub(crate) fn new(lua: &Luau) -> Self {
         Self::with_type(lua, UserDataType::Shared(TypeIdHints::new::<T>()))
     }
 }
 
 impl<T> UserDataRegistry<T> {
     #[inline(always)]
-    fn with_type(lua: &Lua, r#type: UserDataType) -> Self {
+    fn with_type(lua: &Luau, r#type: UserDataType) -> Self {
         let raw = RawUserDataRegistry {
             fields: Vec::new(),
             field_getters: Vec::new(),
@@ -134,7 +134,7 @@ impl<T> UserDataRegistry<T> {
 
     fn box_method<M, A, R>(&self, name: &str, method: M) -> Callback
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -172,7 +172,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_method_namecall<M, A, R>(&self, name: &str, method: M) -> NamecallCallback
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -211,7 +211,7 @@ impl<T> UserDataRegistry<T> {
 
     fn box_method_mut<M, A, R>(&self, name: &str, method: M) -> Callback
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -251,7 +251,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_method_mut_namecall<M, A, R>(&self, name: &str, method: M) -> NamecallCallback
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -291,7 +291,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_dynamic_method<M, A, R>(&self, method: M) -> DynamicCallback
     where
-        M: Fn(&Lua, &T, &str, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, &str, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -330,7 +330,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_dynamic_method_mut<M, A, R>(&self, method: M) -> DynamicCallback
     where
-        M: FnMut(&Lua, &mut T, &str, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, &str, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -370,7 +370,7 @@ impl<T> UserDataRegistry<T> {
 
     fn box_function<F, A, R>(&self, name: &str, function: F) -> Callback
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -385,7 +385,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_function_namecall<F, A, R>(&self, name: &str, function: F) -> NamecallCallback
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -399,7 +399,7 @@ impl<T> UserDataRegistry<T> {
 
     fn box_function_mut<F, A, R>(&self, name: &str, function: F) -> Callback
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -418,7 +418,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     fn box_function_namecall_mut<F, A, R>(&self, name: &str, function: F) -> NamecallCallback
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -434,7 +434,7 @@ impl<T> UserDataRegistry<T> {
         })
     }
 
-    pub(crate) fn check_meta_field(lua: &Lua, name: &str, value: impl IntoLua) -> Result<Value> {
+    pub(crate) fn check_meta_field(lua: &Luau, name: &str, value: impl IntoLua) -> Result<Value> {
         let value = value.into_lua(lua)?;
         if name == MetaMethod::Index || name == MetaMethod::NewIndex {
             match value {
@@ -469,7 +469,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     pub fn set_dynamic_method<F, A, R>(&mut self, method: F)
     where
-        F: Fn(&Lua, &T, &str, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, &T, &str, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -490,7 +490,7 @@ impl<T> UserDataRegistry<T> {
     #[cfg(feature = "luau")]
     pub fn set_dynamic_method_mut<F, A, R>(&mut self, method: F)
     where
-        F: FnMut(&Lua, &mut T, &str, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, &mut T, &str, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -590,7 +590,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 
     fn add_field_method_get<M, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T) -> Result<R> + MaybeSend + 'static,
         R: IntoLua,
     {
         let name = name.into();
@@ -600,7 +600,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 
     fn add_field_method_set<M, A>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<()> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<()> + MaybeSend + 'static,
         A: FromLua,
     {
         let name = name.into();
@@ -610,7 +610,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 
     fn add_field_function_get<F, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, AnyUserData) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, AnyUserData) -> Result<R> + MaybeSend + 'static,
         R: IntoLua,
     {
         let name = name.into();
@@ -620,7 +620,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 
     fn add_field_function_set<F, A>(&mut self, name: impl Into<StdString>, mut function: F)
     where
-        F: FnMut(&Lua, AnyUserData, A) -> Result<()> + MaybeSend + 'static,
+        F: FnMut(&Luau, AnyUserData, A) -> Result<()> + MaybeSend + 'static,
         A: FromLua,
     {
         let name = name.into();
@@ -640,7 +640,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 
     fn add_meta_field_with<F, R>(&mut self, name: impl Into<StdString>, f: F)
     where
-        F: FnOnce(&Lua) -> Result<R> + 'static,
+        F: FnOnce(&Luau) -> Result<R> + 'static,
         R: IntoLua,
     {
         let lua = self.lua.lua();
@@ -653,7 +653,7 @@ impl<T> UserDataFields<T> for UserDataRegistry<T> {
 impl<T> UserDataMethods<T> for UserDataRegistry<T> {
     fn add_method<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -680,7 +680,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
         debugname: &'static CStr,
         method: M,
     ) where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -696,7 +696,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_method_mut<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -723,7 +723,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
         debugname: &'static CStr,
         method: M,
     ) where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -739,7 +739,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_function<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -765,7 +765,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
         debugname: &'static CStr,
         function: F,
     ) where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -780,7 +780,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_function_mut<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -806,7 +806,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
         debugname: &'static CStr,
         function: F,
     ) where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -829,7 +829,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_meta_method<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: Fn(&Lua, &T, A) -> Result<R> + MaybeSend + 'static,
+        M: Fn(&Luau, &T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -840,7 +840,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_meta_method_mut<M, A, R>(&mut self, name: impl Into<StdString>, method: M)
     where
-        M: FnMut(&Lua, &mut T, A) -> Result<R> + MaybeSend + 'static,
+        M: FnMut(&Luau, &mut T, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -851,7 +851,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_meta_function<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: Fn(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: Fn(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {
@@ -862,7 +862,7 @@ impl<T> UserDataMethods<T> for UserDataRegistry<T> {
 
     fn add_meta_function_mut<F, A, R>(&mut self, name: impl Into<StdString>, function: F)
     where
-        F: FnMut(&Lua, A) -> Result<R> + MaybeSend + 'static,
+        F: FnMut(&Luau, A) -> Result<R> + MaybeSend + 'static,
         A: FromLuaMulti,
         R: IntoLuaMulti,
     {

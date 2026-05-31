@@ -5,7 +5,7 @@ use std::sync::Arc;
 use crate::error::{Error, Result};
 use crate::multi::MultiValue;
 use crate::private::Sealed;
-use crate::state::{Lua, RawLua, WeakLua};
+use crate::state::{Luau, RawLua, WeakLua};
 use crate::types::MaybeSend;
 use crate::util::{check_stack, parse_lookup_path, short_type_name};
 use crate::value::Value;
@@ -13,7 +13,7 @@ use crate::value::Value;
 /// Trait for types convertible to [`Value`].
 pub trait IntoLua: Sized {
     /// Performs the conversion.
-    fn into_lua(self, lua: &Lua) -> Result<Value>;
+    fn into_lua(self, lua: &Luau) -> Result<Value>;
 
     /// Pushes the value directly into a Lua stack
     ///
@@ -29,7 +29,7 @@ pub trait IntoLua: Sized {
 /// Trait for types convertible from [`Value`].
 pub trait FromLua: Sized {
     /// Performs the conversion.
-    fn from_lua(value: Value, lua: &Lua) -> Result<Self>;
+    fn from_lua(value: Value, lua: &Luau) -> Result<Self>;
 
     /// Performs the conversion for an argument (eg. function argument).
     ///
@@ -37,7 +37,7 @@ pub trait FromLua: Sized {
     /// `to` is a function name that received the argument.
     #[doc(hidden)]
     #[inline]
-    fn from_lua_arg(arg: Value, i: usize, to: Option<&str>, lua: &Lua) -> Result<Self> {
+    fn from_lua_arg(arg: Value, i: usize, to: Option<&str>, lua: &Luau) -> Result<Self> {
         Self::from_lua(arg, lua).map_err(|err| Error::BadArgument {
             to: to.map(|s| s.to_string()),
             pos: i,
@@ -78,7 +78,7 @@ pub trait FromLua: Sized {
 /// just one. Any type that implements [`IntoLua`] will automatically implement this trait.
 pub trait IntoLuaMulti: Sized {
     /// Performs the conversion.
-    fn into_lua_multi(self, lua: &Lua) -> Result<MultiValue>;
+    fn into_lua_multi(self, lua: &Luau) -> Result<MultiValue>;
 
     /// Pushes the values directly into a Lua stack
     ///
@@ -114,7 +114,7 @@ pub trait FromLuaMulti: Sized {
     /// values should be ignored. This reflects the semantics of Lua when calling a function or
     /// assigning values. Similarly, if not enough values are given, conversions should assume that
     /// any missing values are nil.
-    fn from_lua_multi(values: MultiValue, lua: &Lua) -> Result<Self>;
+    fn from_lua_multi(values: MultiValue, lua: &Luau) -> Result<Self>;
 
     /// Performs the conversion for a list of arguments.
     ///
@@ -122,7 +122,7 @@ pub trait FromLuaMulti: Sized {
     /// `to` is a function name that received the arguments.
     #[doc(hidden)]
     #[inline]
-    fn from_lua_args(args: MultiValue, i: usize, to: Option<&str>, lua: &Lua) -> Result<Self> {
+    fn from_lua_args(args: MultiValue, i: usize, to: Option<&str>, lua: &Luau) -> Result<Self> {
         let _ = (i, to);
         Self::from_lua_multi(args, lua)
     }
@@ -239,14 +239,14 @@ pub trait ObjectLike: Sealed {
 }
 
 /// A trait for types that can be used as Lua functions.
-pub trait LuaNativeFn<A: FromLuaMulti> {
+pub trait LuauNativeFn<A: FromLuaMulti> {
     type Output: IntoLuaMulti;
 
     fn call(&self, args: A) -> Self::Output;
 }
 
 /// A trait for types with mutable state that can be used as Lua functions.
-pub trait LuaNativeFnMut<A: FromLuaMulti> {
+pub trait LuauNativeFnMut<A: FromLuaMulti> {
     type Output: IntoLuaMulti;
 
     fn call(&mut self, args: A) -> Self::Output;
@@ -254,7 +254,7 @@ pub trait LuaNativeFnMut<A: FromLuaMulti> {
 
 macro_rules! impl_lua_native_fn {
     ($($A:ident),*) => {
-        impl<FN, $($A,)* R> LuaNativeFn<($($A,)*)> for FN
+        impl<FN, $($A,)* R> LuauNativeFn<($($A,)*)> for FN
         where
             FN: Fn($($A,)*) -> R + MaybeSend + 'static,
             ($($A,)*): FromLuaMulti,
@@ -269,7 +269,7 @@ macro_rules! impl_lua_native_fn {
             }
         }
 
-        impl<FN, $($A,)* R> LuaNativeFnMut<($($A,)*)> for FN
+        impl<FN, $($A,)* R> LuauNativeFnMut<($($A,)*)> for FN
         where
             FN: FnMut($($A,)*) -> R + MaybeSend + 'static,
             ($($A,)*): FromLuaMulti,

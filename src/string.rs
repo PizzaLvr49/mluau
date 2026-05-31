@@ -6,9 +6,9 @@ use std::string::String as StdString;
 use std::{cmp, fmt, slice, str};
 
 use crate::error::{Error, Result};
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::traits::IntoLua;
-use crate::types::{LuaType, ValueRef};
+use crate::types::{LuauType, ValueRef};
 use crate::value::Value;
 
 #[cfg(feature = "serde")]
@@ -115,7 +115,7 @@ impl String {
     }
 
     // Does not return the terminating null byte
-    unsafe fn to_slice(&self) -> (&[u8], Lua) {
+    unsafe fn to_slice(&self) -> (&[u8], Luau) {
         let lua = self.0.lua.upgrade();
         let slice = {
             let rawlua = lua.lock();
@@ -238,7 +238,7 @@ pub struct BorrowedStr<'a> {
     // `buf` points to a readonly memory managed by Lua
     pub(crate) buf: &'a str,
     pub(crate) borrow: Cow<'a, String>,
-    pub(crate) _lua: Lua,
+    pub(crate) _lua: Luau,
 }
 
 impl Deref for BorrowedStr<'_> {
@@ -322,7 +322,7 @@ pub struct BorrowedBytes<'a> {
     // `buf` points to a readonly memory managed by Lua
     pub(crate) buf: &'a [u8],
     pub(crate) borrow: Cow<'a, String>,
-    pub(crate) _lua: Lua,
+    pub(crate) _lua: Luau,
 }
 
 impl Deref for BorrowedBytes<'_> {
@@ -410,12 +410,12 @@ impl String {
 }
 
 impl<T: AsRef<[u8]>> IntoLua for WrappedString<T> {
-    fn into_lua(self, lua: &Lua) -> Result<Value> {
+    fn into_lua(self, lua: &Luau) -> Result<Value> {
         lua.create_string(self.0).map(Value::String)
     }
 }
 
-impl LuaType for String {
+impl LuauType for String {
     const TYPE_ID: c_int = ffi::LUA_TSTRING;
 }
 

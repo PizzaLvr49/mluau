@@ -23,7 +23,7 @@ use crate::util::{get_internal_metatable, push_internal_userdata, TypeKey, Wrapp
 use crate::chunk::Compiler;
 use crate::MultiValue;
 
-use super::{Lua, WeakLua};
+use super::{Luau, WeakLua};
 
 // Unique key to store `ExtraData` in the registry
 static EXTRA_REGISTRY_KEY: u8 = 0;
@@ -71,7 +71,7 @@ impl RefThread {
 
 /// Data associated with the Lua state.
 pub(crate) struct ExtraData {
-    pub(super) lua: MaybeUninit<Lua>,
+    pub(super) lua: MaybeUninit<Luau>,
     pub(super) weak: MaybeUninit<WeakLua>,
     pub(super) owned: bool,
 
@@ -248,7 +248,7 @@ impl ExtraData {
     }
 
     pub(super) unsafe fn set_lua(&mut self, raw: &XRc<ReentrantMutex<RawLua>>) {
-        self.lua.write(Lua {
+        self.lua.write(Luau {
             raw: XRc::clone(raw),
             collect_garbage: false,
         });
@@ -289,7 +289,7 @@ impl ExtraData {
     }
 
     #[inline(always)]
-    pub(super) unsafe fn lua(&self) -> &Lua {
+    pub(super) unsafe fn lua(&self) -> &Luau {
         self.lua.assume_init_ref()
     }
 

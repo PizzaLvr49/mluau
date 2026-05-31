@@ -7,7 +7,7 @@ use std::result::Result as StdResult;
 use rustc_hash::FxHashMap;
 
 use super::MaybeSend;
-use crate::state::LuaGuard;
+use crate::state::LuauGuard;
 
 #[cfg(not(feature = "send"))]
 type Container = UnsafeCell<FxHashMap<TypeId, RefCell<Box<dyn Any>>>>;
@@ -43,7 +43,7 @@ impl AppData {
 
     #[inline]
     #[track_caller]
-    pub(crate) fn borrow<T: 'static>(&self, guard: Option<LuaGuard>) -> Option<AppDataRef<'_, T>> {
+    pub(crate) fn borrow<T: 'static>(&self, guard: Option<LuauGuard>) -> Option<AppDataRef<'_, T>> {
         match self.try_borrow(guard) {
             Ok(data) => data,
             Err(err) => panic!("already mutably borrowed: {err:?}"),
@@ -52,7 +52,7 @@ impl AppData {
 
     pub(crate) fn try_borrow<T: 'static>(
         &self,
-        guard: Option<LuaGuard>,
+        guard: Option<LuauGuard>,
     ) -> Result<Option<AppDataRef<'_, T>>, BorrowError> {
         let data = unsafe { &*self.container.get() }
             .get(&TypeId::of::<T>())
@@ -74,7 +74,7 @@ impl AppData {
 
     #[inline]
     #[track_caller]
-    pub(crate) fn borrow_mut<T: 'static>(&self, guard: Option<LuaGuard>) -> Option<AppDataRefMut<'_, T>> {
+    pub(crate) fn borrow_mut<T: 'static>(&self, guard: Option<LuauGuard>) -> Option<AppDataRefMut<'_, T>> {
         match self.try_borrow_mut(guard) {
             Ok(data) => data,
             Err(err) => panic!("already borrowed: {err:?}"),
@@ -83,7 +83,7 @@ impl AppData {
 
     pub(crate) fn try_borrow_mut<T: 'static>(
         &self,
-        guard: Option<LuaGuard>,
+        guard: Option<LuauGuard>,
     ) -> Result<Option<AppDataRefMut<'_, T>>, BorrowMutError> {
         let data = unsafe { &*self.container.get() }
             .get(&TypeId::of::<T>())
@@ -124,7 +124,7 @@ impl AppData {
 pub struct AppDataRef<'a, T: ?Sized + 'a> {
     data: Ref<'a, T>,
     borrow: &'a Cell<usize>,
-    _guard: Option<LuaGuard>,
+    _guard: Option<LuauGuard>,
 }
 
 impl<T: ?Sized> Drop for AppDataRef<'_, T> {
@@ -160,7 +160,7 @@ impl<T: ?Sized + fmt::Debug> fmt::Debug for AppDataRef<'_, T> {
 pub struct AppDataRefMut<'a, T: ?Sized + 'a> {
     data: RefMut<'a, T>,
     borrow: &'a Cell<usize>,
-    _guard: Option<LuaGuard>,
+    _guard: Option<LuauGuard>,
 }
 
 impl<T: ?Sized> Drop for AppDataRefMut<'_, T> {

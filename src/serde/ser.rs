@@ -2,9 +2,9 @@
 
 use serde::{ser, Serialize};
 
-use super::LuaSerdeExt;
+use super::LuauSerdeExt;
 use crate::error::{Error, Result};
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::table::Table;
 use crate::traits::IntoLua;
 use crate::value::Value;
@@ -12,7 +12,7 @@ use crate::value::Value;
 /// A struct for serializing Rust values into Lua values.
 #[derive(Debug)]
 pub struct Serializer<'a> {
-    lua: &'a Lua,
+    lua: &'a Luau,
     options: Options,
 }
 
@@ -119,7 +119,7 @@ impl<'a> Serializer<'a> {
     }
 
     /// Creates a new Lua Serializer with custom options.
-    pub fn new_with_options(lua: &'a Lua, options: Options) -> Self {
+    pub fn new_with_options(lua: &'a Luau, options: Options) -> Self {
         Serializer { lua, options }
     }
 }
@@ -350,7 +350,7 @@ pub struct SerializeSeq<'a> {
 }
 
 impl<'a> SerializeSeq<'a> {
-    fn new(lua: &'a Lua, table: Table, options: Options) -> Self {
+    fn new(lua: &'a Luau, table: Table, options: Options) -> Self {
         Self {
             lua,
             #[cfg(feature = "luau")]
@@ -439,7 +439,7 @@ impl ser::SerializeTupleStruct for SerializeSeq<'_> {
 
 #[doc(hidden)]
 pub struct SerializeTupleVariant<'a> {
-    lua: &'a Lua,
+    lua: &'a Luau,
     variant: &'static str,
     table: Table,
     options: Options,
@@ -465,7 +465,7 @@ impl ser::SerializeTupleVariant for SerializeTupleVariant<'_> {
 
 #[doc(hidden)]
 pub struct SerializeMap<'a> {
-    lua: &'a Lua,
+    lua: &'a Luau,
     table: Table,
     key: Option<Value>,
     options: Options,

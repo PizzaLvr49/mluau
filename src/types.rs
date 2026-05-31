@@ -4,7 +4,7 @@ use std::os::raw::{c_int, c_void};
 #[cfg(not(feature = "luau"))]
 use crate::debug::{Debug, HookTriggers};
 use crate::error::Result;
-use crate::state::{ExtraData, Lua, RawLua};
+use crate::state::{ExtraData, Luau, RawLua};
 
 // Re-export mutex wrappers
 pub use sync::XRc;
@@ -100,25 +100,25 @@ pub(crate) enum HookKind {
 }
 
 #[cfg(all(feature = "send", not(feature = "luau")))]
-pub(crate) type HookCallback = XRc<dyn Fn(&Lua, &Debug) -> Result<VmState> + Send>;
+pub(crate) type HookCallback = XRc<dyn Fn(&Luau, &Debug) -> Result<VmState> + Send>;
 
 #[cfg(all(not(feature = "send"), not(feature = "luau")))]
-pub(crate) type HookCallback = XRc<dyn Fn(&Lua, &Debug) -> Result<VmState>>;
+pub(crate) type HookCallback = XRc<dyn Fn(&Luau, &Debug) -> Result<VmState>>;
 
 #[cfg(all(feature = "send", feature = "luau"))]
-pub(crate) type InterruptCallback = XRc<dyn Fn(&Lua) -> Result<VmState> + Send>;
+pub(crate) type InterruptCallback = XRc<dyn Fn(&Luau) -> Result<VmState> + Send>;
 
 #[cfg(all(not(feature = "send"), feature = "luau"))]
-pub(crate) type InterruptCallback = XRc<dyn Fn(&Lua) -> Result<VmState>>;
+pub(crate) type InterruptCallback = XRc<dyn Fn(&Luau) -> Result<VmState>>;
 
 #[cfg(feature = "luau")]
-pub(crate) type GcInterruptCallback = XRc<dyn Fn(&Lua, c_int) -> ()>;
+pub(crate) type GcInterruptCallback = XRc<dyn Fn(&Luau, c_int) -> ()>;
 
 #[cfg(all(feature = "send", feature = "luau"))]
-pub(crate) type ThreadCreationCallback = XRc<dyn Fn(&Lua, crate::Thread) -> Result<()> + Send>;
+pub(crate) type ThreadCreationCallback = XRc<dyn Fn(&Luau, crate::Thread) -> Result<()> + Send>;
 
 #[cfg(all(not(feature = "send"), feature = "luau"))]
-pub(crate) type ThreadCreationCallback = XRc<dyn Fn(&Lua, crate::Thread) -> Result<()>>;
+pub(crate) type ThreadCreationCallback = XRc<dyn Fn(&Luau, crate::Thread) -> Result<()>>;
 
 #[cfg(all(feature = "send", feature = "luau"))]
 pub(crate) type ThreadCollectionCallback = XRc<dyn Fn(crate::LightUserData) + Send>;
@@ -127,10 +127,10 @@ pub(crate) type ThreadCollectionCallback = XRc<dyn Fn(crate::LightUserData) + Se
 pub(crate) type ThreadCollectionCallback = XRc<dyn Fn(crate::LightUserData)>;
 
 #[cfg(all(feature = "send", feature = "lua54"))]
-pub(crate) type WarnCallback = XRc<dyn Fn(&Lua, &str, bool) -> Result<()> + Send>;
+pub(crate) type WarnCallback = XRc<dyn Fn(&Luau, &str, bool) -> Result<()> + Send>;
 
 #[cfg(all(not(feature = "send"), feature = "lua54"))]
-pub(crate) type WarnCallback = XRc<dyn Fn(&Lua, &str, bool) -> Result<()>>;
+pub(crate) type WarnCallback = XRc<dyn Fn(&Luau, &str, bool) -> Result<()>>;
 
 /// A trait that adds `Send` requirement if `send` feature is enabled.
 #[cfg(feature = "send")]
@@ -158,19 +158,19 @@ impl<T> MaybeSync for T {}
 
 pub(crate) struct DestructedUserdata;
 
-pub(crate) trait LuaType {
+pub(crate) trait LuauType {
     const TYPE_ID: c_int;
 }
 
-impl LuaType for bool {
+impl LuauType for bool {
     const TYPE_ID: c_int = ffi::LUA_TBOOLEAN;
 }
 
-impl LuaType for Number {
+impl LuauType for Number {
     const TYPE_ID: c_int = ffi::LUA_TNUMBER;
 }
 
-impl LuaType for LightUserData {
+impl LuauType for LightUserData {
     const TYPE_ID: c_int = ffi::LUA_TLIGHTUSERDATA;
 }
 

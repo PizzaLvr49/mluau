@@ -4,7 +4,7 @@ use std::iter::Peekable;
 use std::str::CharIndices;
 
 use crate::error::{Error, Result};
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::traits::IntoLua;
 use crate::types::Integer;
 use crate::value::Value;
@@ -25,7 +25,7 @@ impl fmt::Display for PathKey<'_> {
 }
 
 impl IntoLua for PathKey<'_> {
-    fn into_lua(self, lua: &Lua) -> Result<Value> {
+    fn into_lua(self, lua: &Luau) -> Result<Value> {
         match self {
             PathKey::Str(s) => Ok(Value::String(lua.create_string(s.as_ref())?)),
             PathKey::Int(i) => Ok(Value::Integer(i)),

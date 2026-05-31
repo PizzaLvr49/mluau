@@ -8,14 +8,14 @@ use serde::ser::Serialize;
 use crate::error::Result;
 use crate::private::Sealed;
 use crate::state::util::get_next_spot;
-use crate::state::Lua;
+use crate::state::Luau;
 use crate::table::Table;
 use crate::util::check_stack;
 use crate::value::Value;
 
 /// Trait for serializing/deserializing Lua values using Serde.
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
-pub trait LuaSerdeExt: Sealed {
+pub trait LuauSerdeExt: Sealed {
     /// A special value (lightuserdata) to encode/decode optional (none) values.
     ///
     /// # Example
@@ -176,7 +176,7 @@ pub trait LuaSerdeExt: Sealed {
     fn from_value_with<T: DeserializeOwned>(&self, value: Value, options: de::Options) -> Result<T>;
 }
 
-impl LuaSerdeExt for Lua {
+impl LuauSerdeExt for Luau {
     fn null(&self) -> Value {
         Value::NULL
     }

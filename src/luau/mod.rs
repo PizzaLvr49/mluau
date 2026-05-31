@@ -7,7 +7,7 @@ use std::sync::atomic::AtomicBool;
 use crate::chunk::ChunkMode;
 use crate::error::{Error, Result};
 use crate::function::Function;
-use crate::state::{callback_error_ext, ExtraData, Lua};
+use crate::state::{callback_error_ext, ExtraData, Luau};
 use crate::traits::{FromLuaMulti, IntoLua};
 use crate::types::MaybeSend;
 
@@ -19,7 +19,7 @@ static HAVE_SET_INTEGER_FFLAG: AtomicBool = AtomicBool::new(false);
 
 // Since Luau has some missing standard functions, we re-implement them here
 
-impl Lua {
+impl Luau {
     /// Create a custom Luau `require` function using provided [`Require`] implementation to find
     /// and load modules.
     #[cfg(any(feature = "luau", doc))]
@@ -70,7 +70,7 @@ impl Lua {
     /// Dumps the current Lua VM heap state.
     ///
     /// The returned `HeapDump` can be used to analyze memory usage.
-    /// It's recommended to call [`Lua::gc_collect`] before dumping the heap.
+    /// It's recommended to call [`Luau::gc_collect`] before dumping the heap.
     #[cfg(any(feature = "luau", doc))]
     #[cfg_attr(docsrs, doc(cfg(feature = "luau")))]
     pub fn heap_dump(&self) -> Result<HeapDump> {

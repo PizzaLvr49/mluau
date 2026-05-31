@@ -96,13 +96,13 @@ pub use crate::debug::{Debug, DebugEvent, DebugNames, DebugSource, DebugStack};
 pub use crate::error::{Error, ErrorContext, ExternalError, ExternalResult, Result};
 pub use crate::function::{Function, FunctionInfo};
 pub use crate::multi::{MultiValue, Variadic};
-pub use crate::state::{GCMode, Lua, LuaOptions, WeakLua};
+pub use crate::state::{GCMode, Luau, LuauOptions, WeakLua};
 pub use crate::stdlib::StdLib;
 pub use crate::string::{BorrowedBytes, BorrowedStr, String};
 pub use crate::table::{Table, TablePairs, TablePairsOwned, TableSequence};
 pub use crate::thread::{ContinuationStatus, Thread, ThreadStatus};
 pub use crate::traits::{
-    FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, LuaNativeFn, LuaNativeFnMut, ObjectLike,
+    FromLua, FromLuaMulti, IntoLua, IntoLuaMulti, LuauNativeFn, LuauNativeFnMut, ObjectLike,
 };
 pub use crate::types::{
     AppDataRef, AppDataRefMut, Either, Integer, LightUserData, MaybeSend, Number, RegistryKey, VmState,
@@ -131,7 +131,7 @@ pub use crate::{
 #[cfg(feature = "serde")]
 #[doc(inline)]
 pub use crate::{
-    serde::{de::Options as DeserializeOptions, ser::Options as SerializeOptions, LuaSerdeExt},
+    serde::{de::Options as DeserializeOptions, ser::Options as SerializeOptions, LuauSerdeExt},
     value::SerializableValue,
 };
 
@@ -259,7 +259,7 @@ pub(crate) mod private {
 
     impl Sealed for Error {}
     impl<T> Sealed for std::result::Result<T, Error> {}
-    impl Sealed for Lua {}
+    impl Sealed for Luau {}
     impl Sealed for Table {}
     impl Sealed for AnyUserData {}
 }
