@@ -1,4 +1,4 @@
-//! Re-exports most types with an extra `Luau*` prefix to prevent name clashes.
+//! Re-exports most types with an extra `Lua*` prefix to prevent name clashes.
 
 #[doc(no_inline)]
 pub use crate::{
@@ -7,10 +7,10 @@ pub use crate::{
     Error as LuauError, ErrorContext as LuauErrorContext, ExternalError as LuauExternalError,
     ExternalResult as LuauExternalResult, FromLua, FromLuaMulti, Function as LuauFunction,
     FunctionInfo as LuauFunctionInfo, GCMode as LuauGCMode, Integer as LuauInteger, IntoLua, IntoLuaMulti,
-    LightUserData as LuauLightUserData, Luau, LuauNativeFn, LuauNativeFnMut, LuauOptions as LuauLuaOptions,
-    MetaMethod as LuauMetaMethod, MultiValue as LuauMultiValue, Nil as LuauNil, Number as LuauNumber,
-    ObjectLike as LuauObjectLike, RegistryKey as LuauRegistryKey, Result as LuauResult, StdLib as LuauStdLib,
-    String as LuauString, Table as LuauTable, TablePairs as LuauTablePairs,
+    LightUserData as LuauLightUserData, Lua as Luau, LuaNativeFn, LuaNativeFnMut,
+    LuaOptions as LuauLuaOptions, MetaMethod as LuauMetaMethod, MultiValue as LuauMultiValue, Nil as LuauNil,
+    Number as LuauNumber, ObjectLike as LuauObjectLike, RegistryKey as LuauRegistryKey, Result as LuauResult,
+    StdLib as LuauStdLib, String as LuauString, Table as LuauTable, TablePairs as LuauTablePairs,
     TablePairsOwned as LuauTablePairsOwned, TableSequence as LuauTableSequence, Thread as LuauThread,
     ThreadStatus as LuauThreadStatus, UserData as LuauUserData, UserDataFields as LuauUserDataFields,
     UserDataMetatable as LuauUserDataMetatable, UserDataMethods as LuauUserDataMethods,
@@ -34,6 +34,6 @@ pub use crate::{
 #[cfg(feature = "serde")]
 #[doc(no_inline)]
 pub use crate::{
-    DeserializeOptions as LuauDeserializeOptions, LuauSerdeExt as LuauLuaSerdeExt,
+    DeserializeOptions as LuauDeserializeOptions, LuaSerdeExt as LuauLuaSerdeExt,
     SerializableValue as LuauSerializableValue, SerializeOptions as LuauSerializeOptions,
 };
