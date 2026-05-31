@@ -1,4 +1,4 @@
-//! Re-exports most types with an extra `Lua*` prefix to prevent name clashes.
+//! Re-exports most types with an extra `Luau*` prefix to prevent name clashes.
 
 #[doc(no_inline)]
 pub use crate::{
