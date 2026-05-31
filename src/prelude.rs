@@ -2,37 +2,38 @@
 
 #[doc(no_inline)]
 pub use crate::{
-    AnyUserData as LuaAnyUserData, BorrowedBytes as LuaBorrowedBytes, BorrowedStr as LuaBorrowedStr,
-    Chunk as LuaChunk, ContinuationStatus as LuaContinuationStatus, Either as LuaEither, Error as LuaError,
-    ErrorContext as LuaErrorContext, ExternalError as LuaExternalError, ExternalResult as LuaExternalResult,
-    FromLua, FromLuaMulti, Function as LuaFunction, FunctionInfo as LuaFunctionInfo, GCMode as LuaGCMode,
-    Integer as LuaInteger, IntoLua, IntoLuaMulti, LightUserData as LuaLightUserData, Lua, LuaNativeFn,
-    LuaNativeFnMut, LuaOptions, MetaMethod as LuaMetaMethod, MultiValue as LuaMultiValue, Nil as LuaNil,
-    Number as LuaNumber, ObjectLike as LuaObjectLike, RegistryKey as LuaRegistryKey, Result as LuaResult,
-    StdLib as LuaStdLib, String as LuaString, Table as LuaTable, TablePairs as LuaTablePairs,
-    TablePairsOwned as LuaTablePairsOwned, TableSequence as LuaTableSequence, Thread as LuaThread,
-    ThreadStatus as LuaThreadStatus, UserData as LuaUserData, UserDataFields as LuaUserDataFields,
-    UserDataMetatable as LuaUserDataMetatable, UserDataMethods as LuaUserDataMethods,
-    UserDataRef as LuaUserDataRef, UserDataRefMut as LuaUserDataRefMut,
-    UserDataRegistry as LuaUserDataRegistry, Value as LuaValue, Variadic as LuaVariadic,
-    VmState as LuaVmState, WeakLua,
+    AnyUserData as LuauAnyUserData, BorrowedBytes as LuauBorrowedBytes, BorrowedStr as LuauBorrowedStr,
+    Chunk as LuauChunk, ContinuationStatus as LuauContinuationStatus, Either as LuauEither,
+    Error as LuauError, ErrorContext as LuauErrorContext, ExternalError as LuauExternalError,
+    ExternalResult as LuauExternalResult, FromLua, FromLuaMulti, Function as LuauFunction,
+    FunctionInfo as LuauFunctionInfo, GCMode as LuauGCMode, Integer as LuauInteger, IntoLua, IntoLuaMulti,
+    LightUserData as LuauLightUserData, Lua, LuaNativeFn, LuaNativeFnMut, LuaOptions,
+    MetaMethod as LuauMetaMethod, MultiValue as LuauMultiValue, Nil as LuauNil, Number as LuauNumber,
+    ObjectLike as LuauObjectLike, RegistryKey as LuauRegistryKey, Result as LuauResult, StdLib as LuauStdLib,
+    String as LuauString, Table as LuauTable, TablePairs as LuauTablePairs,
+    TablePairsOwned as LuauTablePairsOwned, TableSequence as LuauTableSequence, Thread as LuauThread,
+    ThreadStatus as LuauThreadStatus, UserData as LuauUserData, UserDataFields as LuauUserDataFields,
+    UserDataMetatable as LuauUserDataMetatable, UserDataMethods as LuauUserDataMethods,
+    UserDataRef as LuauUserDataRef, UserDataRefMut as LuauUserDataRefMut,
+    UserDataRegistry as LuauUserDataRegistry, Value as LuauValue, Variadic as LuauVariadic,
+    VmState as LuauVmState, WeakLua,
 };
 
 #[cfg(not(feature = "luau"))]
 #[doc(no_inline)]
-pub use crate::HookTriggers as LuaHookTriggers;
+pub use crate::HookTriggers as LuauHookTriggers;
 
 #[cfg(feature = "luau")]
 #[doc(no_inline)]
 pub use crate::{
-    CompileConstant as LuaCompileConstant, CoverageInfo as LuaCoverageInfo,
-    NavigateError as LuaNavigateError, Require as LuaRequire, TextRequirer as LuaTextRequirer,
-    Vector as LuaVector,
+    CompileConstant as LuauCompileConstant, CoverageInfo as LuauCoverageInfo,
+    NavigateError as LuauNavigateError, Require as LuauRequire, TextRequirer as LuauTextRequirer,
+    Vector as LuauVector,
 };
 
 #[cfg(feature = "serde")]
 #[doc(no_inline)]
 pub use crate::{
-    DeserializeOptions as LuaDeserializeOptions, LuaSerdeExt, SerializableValue as LuaSerializableValue,
-    SerializeOptions as LuaSerializeOptions,
+    DeserializeOptions as LuauDeserializeOptions, LuaSerdeExt, SerializableValue as LuauSerializableValue,
+    SerializeOptions as LuauSerializeOptions,
 };
